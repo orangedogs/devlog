@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>개발 일지</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3e;
+      --accent: #7c6af7;
+      --accent2: #5eead4;
+      --text: #e2e4f0;
+      --muted: #6b7280;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #f87171;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 860px;
+      margin: 0 auto 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .timeline {
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 140px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+
+    .day {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 0 2rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .day-date {
+      text-align: right;
+      padding-top: 0.9rem;
+    }
+
+    .day-date .date {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .day-date .weekday {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .day-dot {
+      position: absolute;
+      left: 136px;
+      top: 1.05rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      z-index: 1;
+    }
+
+    .day-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      transition: border-color 0.2s;
+    }
+
+    .day-content:hover {
+      border-color: var(--accent);
+    }
+
+    .day-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      color: var(--text);
+    }
+
+    .tasks {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .tasks li {
+      font-size: 0.875rem;
+      color: #b0b8d4;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      line-height: 1.5;
+    }
+
+    .tasks li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .tasks li.done::before { background: var(--green); }
+    .tasks li.wip::before  { background: var(--yellow); }
+    .tasks li.plan::before { background: var(--muted); }
+    .tasks li.issue::before { background: var(--red); }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .tag.fe { border-color: #7c6af7; color: #7c6af7; }
+    .tag.be { border-color: #5eead4; color: #5eead4; }
+    .tag.ui { border-color: #fbbf24; color: #fbbf24; }
+    .tag.fix { border-color: #f87171; color: #f87171; }
+    .tag.plan { border-color: #60a5fa; color: #60a5fa; }
+
+    .add-day-btn {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .add-day-btn button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      font-size: 0.875rem;
+      padding: 0.7rem 2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .add-day-btn button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .legend {
+      max-width: 860px;
+      margin: 2rem auto 0;
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      padding: 1rem 1.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 600px) {
+      .timeline::before { left: 0; }
+      .day { grid-template-columns: 1fr; }
+      .day-date { text-align: left; padding-top: 0; margin-bottom: 0.5rem; }
+      .day-dot { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>개발 일지</h1>
+    <p>웹 앱 바이브코딩 프로젝트</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="total-days">1</div><div class="label">개발일</div></div>
+    <div class="stat"><div class="num" id="done-count">0</div><div class="label">완료</div></div>
+    <div class="stat"><div class="num" id="wip-count">0</div><div class="label">진행중</div></div>
+  </div>
+</header>
+
+<div class="timeline" id="timeline">
+
+  <!-- ===== DAY 1 ===== -->
+  <div class="day">
+    <div class="day-date">
+      <div class="date">2026-05-12</div>
+      <div class="weekday">화요일</div>
+    </div>
+    <div class="day-dot"></div>
+    <div class="day-content">
+      <div class="day-title">Day 1 — 프로젝트 시작 &amp; 기획</div>
+      <ul class="tasks">
+        <li class="done">프로젝트 폴더 구조 설정</li>
+        <li class="done">개발 일지(devlog.html) 생성</li>
+        <li class="wip">서비스 아이디어 구체화</li>
+        <li class="plan">기술 스택 결정</li>
+        <li class="plan">와이어프레임 초안 작성</li>
+      </ul>
+      <div class="tags">
+        <span class="tag plan">기획</span>
+        <span class="tag fe">설정</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 새 날짜 추가 시 아래 블록을 복사하여 붙여넣으세요 -->
+
+</div>
+
+<div class="add-day-btn">
+  <button onclick="copyTemplate()">+ 새 날짜 블록 템플릿 복사</button>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div> 완료</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> 진행중</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b7280"></div> 예정</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> 이슈</div>
+</div>
+
+<script>
+  // 통계 자동 계산
+  function updateStats() {
+    const tasks = document.querySelectorAll('.tasks li');
+    const days = document.querySelectorAll('.day').length;
+    let done = 0, wip = 0;
+    tasks.forEach(t => {
+      if (t.classList.contains('done')) done++;
+      if (t.classList.contains('wip')) wip++;
+    });
+    document.getElementById('total-days').textContent = days;
+    document.getElementById('done-count').textContent = done;
+    document.getElementById('wip-count').textContent = wip;
+  }
+
+  // 새 날짜 템플릿을 클립보드에 복사
+  function copyTemplate() {
+    const today = new Date();
+    const dateStr = today.toISOString().slice(0, 10);
+    const weekdays = ['일','월','화','수','목','금','토'];
+    const weekday = weekdays[today.getDay()] + '요일';
+    const dayNum = document.querySelectorAll('.day').length + 1;
+
+    const template = `
+  <!-- ===== DAY ${dayNum} ===== -->
+  <div class="day">
+    <div class="day-date">
+      <div class="date">${dateStr}</div>
+      <div class="weekday">${weekday}</div>
+    </div>
+    <div class="day-dot"></div>
+    <div class="day-content">
+      <div class="day-title">Day ${dayNum} — 제목</div>
+      <ul class="tasks">
+        <li class="done">완료된 작업</li>
+        <li class="wip">진행 중인 작업</li>
+        <li class="plan">예정된 작업</li>
+        <li class="issue">발생한 이슈</li>
+      </ul>
+      <div class="tags">
+        <span class="tag fe">Frontend</span>
+        <span class="tag be">Backend</span>
+        <span class="tag ui">UI</span>
+        <span class="tag fix">Fix</span>
+      </div>
+    </div>
+  </div>`;
+
+    navigator.clipboard.writeText(template).then(() => {
+      alert('Day ' + dayNum + ' 템플릿이 클립보드에 복사되었습니다!\ntimeline div 안에 붙여넣으세요.');
+    }).catch(() => {
+      console.log(template);
+      alert('콘솔에 템플릿을 출력했습니다. (F12 > Console)');
+    });
+  }
+
+  updateStats();
+</script>
+</body>
+</html>
