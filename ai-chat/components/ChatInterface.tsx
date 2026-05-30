@@ -49,10 +49,10 @@ export default function ChatInterface() {
 
   const isLoading = status === "submitted" || status === "streaming";
 
-  // 새 메시지가 오면 자동으로 아래로 스크롤
+  // 새 메시지 또는 에러 발생 시 자동으로 아래로 스크롤
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, error]);
 
   // 메시지 전송 처리
   const handleSend = () => {
@@ -96,7 +96,9 @@ export default function ChatInterface() {
         </div>
         {messages.length > 0 && (
           <button
-            onClick={() => setMessages([])}
+            onClick={() => {
+              if (window.confirm("대화 내용을 모두 지울까요?")) setMessages([]);
+            }}
             className="ml-auto text-xs text-blue-200 hover:text-white border border-blue-400 hover:border-white rounded-lg px-2.5 py-1 transition-colors"
           >
             새 대화
